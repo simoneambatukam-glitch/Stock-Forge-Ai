@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="obsidian">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#030D0A">
+    <title>StockForge AI — Microstock Production Asset Studio</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23030D0A'/%3E%3Cpolygon points='32,10 52,22 52,42 32,54 12,42 12,22' fill='none' stroke='%23E5C158' stroke-width='3'/%3E%3Cpath d='M32 22 L38 32 L32 42 L26 32 Z' fill='%2310B981'/%3E%3C/svg%3E">
+    <!-- 100% OFFLINE: no Tailwind CDN, no Google Fonts, no external requests.
+         All styling lives in css/luxury.css (pure CSS + system font stacks). -->
+    <link rel="stylesheet" href="css/luxury.css">
+</head>
+<body>
+
+    <!-- =========================================================================
+         MOBILE APP SHELL (full-bleed fullscreen on phone, luxury bezel
+         preview only on wide screens >= 500px)
+    ========================================================================== -->
+    <div class="mobile-shell-outer">
+        <div class="mobile-shell-inner" id="appViewport">
+
+            <!-- 60FPS SILK AURORA & BOKEH LIVING CANVAS -->
+            <canvas id="luxuryCanvas"></canvas>
+
+            <!-- =================================================================
+                 LUXURY BOOT / SPLASH SCREEN OVERLAY
+            ================================================================== -->
+            <div id="splashOverlay">
+                <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(circle at 50% 36%, rgba(229, 193, 88, 0.16) 0%, rgba(16, 185, 129, 0.12) 35%, transparent 68%);"></div>
+
+                <!-- Rotating Gold Astrolabe + Bespoke App Icon -->
+                <div class="relative w-44 h-44 flex items-center justify-center mb-6">
+                    <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 200 200">
+                        <g class="splash-astrolabe-outer">
+                            <circle cx="100" cy="100" r="92" fill="none" stroke="#E5C158" stroke-width="0.8" stroke-dasharray="4 6" opacity="0.55"/>
+                            <circle cx="100" cy="8" r="2.5" fill="#E5C158"/>
+                            <circle cx="100" cy="192" r="2.5" fill="#10B981"/>
+                        </g>
+                        <g class="splash-astrolabe-inner">
+                            <circle cx="100" cy="100" r="76" fill="none" stroke="#10B981" stroke-width="0.9" stroke-dasharray="14 8" opacity="0.6"/>
+                        </g>
+                    </svg>
+
+                    <!-- Hero App Icon Container -->
+                    <div id="splashIconMount" class="icon-mount w-28 h-28 splash-icon-animate overflow-hidden relative" style="border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 30px rgba(229,193,88,0.3);"></div>
+                </div>
+
+                <!-- Staggered Luxury Brand Typography -->
+                <div class="text-center splash-text-animate">
+                    <div class="inline-flex items-center gap-1p5 px-3 py-1 rounded-full text-10 font-mono-tech tracking-widest uppercase mb-2" style="background: rgba(229, 193, 88, 0.14); border: 1px solid rgba(229, 193, 88, 0.45); color: #E5C158;">
+                        <span>✦</span> ATELIER EDITION • V1.0
+                    </div>
+                    <h1 class="font-luxury text-30 font-extrabold tracking-wide" style="color: #FFFFFF;">
+                        STOCKFORGE <span style="color: #E5C158;">AI</span>
+                    </h1>
+                    <p class="text-11 font-semibold mt-1 uppercase" style="color: #94B8AA; letter-spacing: 0.22em;">
+                        Microstock Production Studio
+                    </p>
+                </div>
+
+                <!-- 6 Offline AI Agents Initialization Progress -->
+                <div class="w-full max-w-xs mt-8 splash-sub-animate">
+                    <div class="flex items-center justify-between text-10 font-mono-tech mb-1p5" style="color: #CBD5E1;">
+                        <span id="splashAgentLabel">Booting 6 Offline AI Agents...</span>
+                        <span id="splashPercentLabel" style="color: #E5C158;">0%</span>
+                    </div>
+                    <div class="w-full h-1p5 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.1);">
+                        <div id="splashProgressBar" class="h-full rounded-full" style="width: 0%; background: linear-gradient(90deg, #10B981, #E5C158); transition: width 0.15s ease;"></div>
+                    </div>
+                    <p class="text-center text-10 mt-3" style="color: #6EE7B7;">
+                        100% Offline Engine • 0 API Key • Global English SEO
+                    </p>
+                </div>
+            </div>
+
+            <!-- =================================================================
+                 SIMULATED NATIVE MOBILE STATUS BAR (DESKTOP BEZEL PREVIEW ONLY)
+            ================================================================== -->
+            <div class="desktop-status-bar relative z-20 items-center justify-between px-7 pt-3 pb-1 text-11 font-bold" style="color: var(--text-primary);">
+                <span>09:54</span>
+                <div class="w-24 h-5 rounded-full flex items-center justify-end" style="background: rgba(0,0,0,0.9); border: 1px solid rgba(255,255,255,0.1); padding-right: 10px;">
+                    <span class="w-2 h-2 rounded-full" style="background: rgba(16,185,129,0.6);"></span>
+                </div>
+                <div class="flex items-center gap-1p5">
+                    <span class="text-10 font-mono-tech">5G</span>
+                    <svg class="w-3p5 h-3p5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3C7.5 3 3.4 4.8.4 7.7L12 21.5 23.6 7.7C20.6 4.8 16.5 3 12 3z"/></svg>
+                    <div class="w-5 h-2p5 flex items-center" style="border: 1px solid currentColor; border-radius: 3px; padding: 1px;">
+                        <div class="w-full h-full" style="background: #34D399; border-radius: 1px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================================================================
+                 STICKY LUXURY ATELIER TOP HEADER
+            ================================================================== -->
+            <header class="relative z-20 px-4 pt-2 pb-2p5 border-b" style="background: var(--glass-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+                <div class="flex items-center justify-between gap-2">
+                    <!-- Mini App Icon + Title -->
+                    <div class="flex items-center gap-2p5 min-w-0">
+                        <div id="headerMiniIcon" class="icon-mount w-9 h-9 rounded-xl shrink-0 overflow-hidden" style="border: 1px solid var(--border-strong); box-shadow: 0 4px 12px rgba(0,0,0,0.3);"></div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-1p5">
+                                <span class="font-luxury text-14 font-extrabold tracking-tight truncate">StockForge <span style="color: var(--accent-gold);">AI</span></span>
+                                <span class="px-1p5 py-0p2 rounded text-9 font-mono-tech font-bold uppercase" style="background: rgba(16,185,129,0.16); color: var(--accent-emerald); border: 1px solid var(--border-emerald);">EN 100%</span>
+                            </div>
+                            <p class="text-10 truncate" style="color: var(--text-muted);">6 Agents • 0 API Key • Offline Ready</p>
+                        </div>
+                    </div>
+
+                    <!-- Luxury Header Controls: Replay Splash, Audio Chime, Theme Switcher -->
+                    <div class="flex items-center gap-1p5 shrink-0">
+                        <button type="button" onclick="replaySplashAnimation()" title="Replay Splash Animation"
+                            class="lux-btn pill-chip px-2 py-1p5 rounded-xl text-10 font-bold flex items-center gap-1">
+                            <svg class="w-3p5 h-3p5" style="color: var(--accent-gold);" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>Splash</span>
+                        </button>
+
+                        <button id="btnSoundToggle" type="button" onclick="toggleAudioSound()" title="Toggle Tactile Sound"
+                            class="lux-btn pill-chip p-1p5 rounded-xl">
+                            <svg id="iconSoundOn" class="w-4 h-4" style="color: var(--accent-emerald);" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                            </svg>
+                            <svg id="iconSoundOff" class="w-4 h-4 hidden" style="color: var(--text-muted);" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                            </svg>
+                        </button>
+
+                        <button id="btnThemeToggle" type="button" onclick="toggleLuxuryTheme()" title="Switch Luxury Theme"
+                            class="lux-btn pill-chip px-2p5 py-1p5 rounded-xl text-10 font-extrabold flex items-center gap-1">
+                            <span id="themeBadgeDot" class="w-2 h-2 rounded-full" style="background: var(--accent-gold);"></span>
+                            <span id="themeBadgeLabel">Obsidian</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- =================================================================
+                 MAIN SCROLLABLE CONTENT AREA
+            ================================================================== -->
+            <main id="mainScrollContainer" class="app-scroll-area space-y-4">
+
+                <!-- =============================================================
+                     TAB 1: STUDIO PRODUKSI (5 MENUS + MASTER OUTPUT)
+                ============================================================== -->
+                <div id="tab-view-studio" class="space-y-4">
+
+                    <!-- MENU 1: PLATFORM UPLOAD MICROSTOCK -->
+                    <section class="atelier-card p-4">
+                        <div class="flex items-center justify-between gap-2 mb-2p5">
+                            <div class="flex items-center gap-2">
+                                <span class="section-num">1</span>
+                                <div>
+                                    <h2 class="text-12 font-extrabold tracking-wide uppercase">Platform Upload Microstock</h2>
+                                    <p class="text-10" style="color: var(--text-muted);">Aturan metadata, kategori resmi &amp; batas keyword otomatis</p>
+                                </div>
+                            </div>
+                            <span id="activePlatformPill" class="px-2 py-0p5 rounded-full text-10 font-mono-tech font-bold" style="background: rgba(229,193,88,0.15); color: var(--accent-gold); border: 1px solid var(--border-strong);">Adobe Stock</span>
+                        </div>
+
+                        <div id="platformGrid" class="grid grid-cols-2 gap-2 mb-3"></div>
+
+                        <!-- Platform Compliance Rule Strip -->
+                        <div id="platformRuleCard" class="rounded-2xl p-3 text-11" style="background: rgba(16, 185, 129, 0.08); border: 1px solid var(--border-emerald);"></div>
+                        <!-- Hard AI warning, shown only when Shutterstock is selected -->
+                        <div id="shutterstockAiWarning" class="warning-banner mt-2 hidden">
+                            ⚠️ <strong>SHUTTERSTOCK TIDAK MENERIMA KONTEN AI.</strong>
+                            Aturan resmi 16 Jul 2025: kontributor dilarang mengunggah aset hasil AI ke Shutterstock.
+                            Pakai platform ini hanya untuk file yang digambar/difoto manual — jangan upload aset AI ke sini.
+                        </div>
+                    </section>
+
+                    <!-- MENU 2: KATEGORI UTAMA -->
+                    <section class="atelier-card p-4">
+                        <div class="flex items-center gap-2 mb-2p5">
+                            <span class="section-num">2</span>
+                            <div>
+                                <h2 class="text-12 font-extrabold tracking-wide uppercase">Kategori Utama Aset</h2>
+                                <p class="text-10" style="color: var(--text-muted);">Pilih medium produksi aset komersial Anda</p>
+                            </div>
+                        </div>
+
+                        <div id="categoryGrid" class="grid grid-cols-4 gap-2"></div>
+                    </section>
+
+                    <!-- MENU 3: GAYA / TIPE FORMAT -->
+                    <section class="atelier-card p-4">
+                        <div class="flex items-center justify-between gap-2 mb-2p5">
+                            <div class="flex items-center gap-2">
+                                <span class="section-num">3</span>
+                                <div>
+                                    <h2 class="text-12 font-extrabold tracking-wide uppercase">Gaya / Tipe Format <span id="formatCatTag" style="color: var(--accent-gold);">(Foto)</span></h2>
+                                    <p class="text-10" style="color: var(--text-muted);">Struktur komposisi &amp; standar teknis file</p>
+                                </div>
+                            </div>
+                            <span id="formatCountBadge" class="text-10 font-mono-tech font-bold px-2 py-0p5 rounded-md" style="background: var(--glass-pill); color: var(--accent-emerald);">8 Format</span>
+                        </div>
+
+                        <div id="formatGrid" class="grid grid-cols-2 gap-2"></div>
+
+                        <!-- Sub-options strictly for Video -->
+                        <div id="videoSubPanel" class="hidden mt-3 pt-3 border-t space-y-3">
+                            <div>
+                                <span class="block text-10 font-extrabold uppercase tracking-wider mb-1p5" style="color: var(--accent-gold);">Rasio Video</span>
+                                <div id="videoRatioGrid" class="grid grid-cols-2 gap-2"></div>
+                            </div>
+                            <div>
+                                <span class="block text-10 font-extrabold uppercase tracking-wider mb-1p5" style="color: var(--accent-gold);">Gerak Kamera</span>
+                                <div id="videoCameraGrid" class="grid grid-cols-3 gap-1p5"></div>
+                            </div>
+                            <div>
+                                <span class="block text-10 font-extrabold uppercase tracking-wider mb-1p5" style="color: var(--accent-gold);">Tipe Looping</span>
+                                <div id="videoLoopGrid" class="grid grid-cols-2 gap-2"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- MENU 4: GAYA VISUAL LENGKAP -->
+                    <section class="atelier-card p-4">
+                        <div class="flex items-center justify-between gap-2 mb-2p5">
+                            <div class="flex items-center gap-2">
+                                <span class="section-num">4</span>
+                                <div>
+                                    <h2 class="text-12 font-extrabold tracking-wide uppercase">Gaya Visual <span id="styleCatTag" style="color: var(--accent-gold);">(18 Gaya)</span></h2>
+                                    <p class="text-10" style="color: var(--text-muted);">Estetika rendering &amp; pencahayaan studio</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Filter Input -->
+                        <div class="relative mb-2p5">
+                            <input id="styleSearchInput" type="text" placeholder="Cari gaya visual (misal: Batik, Glassmorphism, Golden)..." oninput="renderStyleMenu()"
+                                class="input-lux">
+                            <svg class="w-3p5 h-3p5 absolute left-2p5 top-2p5" style="color: var(--accent-gold);" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+
+                        <div id="styleGrid" class="grid grid-cols-2 gap-1p5 max-h-60 overflow-y-auto pr-1 scroll-thin"></div>
+                    </section>
+
+                    <!-- MENU 5: TEMA / DESKRIPSI ASET & GENERATE PROMPT MASTER -->
+                    <section class="atelier-card p-4" style="border-color: var(--border-strong);">
+                        <div class="flex items-center justify-between gap-2 mb-2p5">
+                            <div class="flex items-center gap-2">
+                                <span class="section-num">5</span>
+                                <div>
+                                    <h2 class="text-12 font-extrabold tracking-wide uppercase">Tema / Deskripsi Aset</h2>
+                                    <p class="text-10" style="color: var(--text-muted);">Ketik ID atau EN — otomatis terbit 100% Global English</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-0p5 rounded-md text-9 font-mono-tech font-bold" style="background: rgba(16,185,129,0.15); color: var(--accent-emerald);">ID → EN Auto</span>
+                        </div>
+
+                        <!-- Quick Example Chips -->
+                        <div class="flex gap-1p5 overflow-x-auto pb-2 mb-2">
+                            <button type="button" onclick="applyQuickPreset('Ramadan keluarga indonesia : sahur keluarga hangat di ruang makan cerah dengan kurma dan teh', 'Foto', 'Copy Space', 'High-Key Bright Airy')"
+                                class="lux-btn pill-chip px-2p5 py-1 rounded-lg text-10 font-bold whitespace-nowrap">
+                                ✦ Sahur Keluarga
+                            </button>
+                            <button type="button" onclick="applyQuickPreset('kopi tubruk dan sosis solo gorengan tradisional di meja kayu pagi hari', 'Foto', 'Flat Lay Top-Down', 'Food Editorial')"
+                                class="lux-btn pill-chip px-2p5 py-1 rounded-lg text-10 font-bold whitespace-nowrap">
+                                ✦ Kopi &amp; Sosis Solo
+                            </button>
+                            <button type="button" onclick="applyQuickPreset('ikon belanja online fintech dompet digital keamanan transaksi', 'Vector', 'Icon Set', 'Modern Flat 2.0 (Soft Gradient)')"
+                                class="lux-btn pill-chip px-2p5 py-1 rounded-lg text-10 font-bold whitespace-nowrap">
+                                ✦ Ikon Fintech Vector
+                            </button>
+                            <button type="button" onclick="applyQuickPreset('gelombang cahaya abstrak hijau zamrud dan emas berputar mulus futuristik', 'Video', 'Looping Background Abstrak', '3D Abstract Motion Loop')"
+                                class="lux-btn pill-chip px-2p5 py-1 rounded-lg text-10 font-bold whitespace-nowrap">
+                                ✦ Video Loop Emerald
+                            </button>
+                        </div>
+
+                        <textarea id="themeTextarea" rows="3"
+                            placeholder="Ketik deskripsi aset (contoh: keluarga indonesia sahur di meja makan, kopi tubruk hangat, ikon keuangan digital)..."
+                            class="textarea-lux"></textarea>
+
+                        <!-- Live Transcreation Preview Strip -->
+                        <div class="mt-2 px-3 py-2 rounded-xl flex items-center justify-between gap-2 text-10" style="background: rgba(229,193,88,0.1); border: 1px solid var(--border-subtle);">
+                            <span class="truncate" style="color: var(--text-secondary);">EN Subject: <strong id="liveEnglishSubject" class="font-mono-tech" style="color: var(--accent-gold);"></strong></span>
+                            <span class="font-mono-tech font-bold shrink-0" style="color: var(--accent-emerald);">Pure EN ✓</span>
+                        </div>
+
+                        <!-- HERO CTA BUTTON -->
+                        <button id="btnGenerateMaster" type="button" onclick="triggerMasterGeneration()"
+                            class="lux-btn cta-specular w-full mt-3p5 py-3p5 px-4 rounded-2xl font-extrabold text-12 tracking-wider uppercase flex items-center justify-center gap-2"
+                            style="background: var(--cta-gradient); color: var(--cta-text); box-shadow: 0 10px 28px rgba(212, 175, 55, 0.32);">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            <span id="btnGenerateLabel">GENERATE PROMPT MASTER</span>
+                        </button>
+
+                        <!-- 6 OFFLINE AI AGENTS PIPELINE STATUS -->
+                        <div class="mt-3p5 pt-3 border-t">
+                            <div class="flex items-center justify-between text-10 font-mono-tech mb-2">
+                                <span style="color: var(--accent-gold);">6 AI AGENTS ORCHESTRATION</span>
+                                <span id="agentsPipelineStatus" style="color: var(--accent-emerald);">Standby • Ready</span>
+                            </div>
+                            <div id="agentsMiniGrid" class="grid grid-cols-3 gap-1p5"></div>
+                        </div>
+                    </section>
+
+                    <!-- =========================================================
+                         STUDIO OUTPUT SECTION (MASTER PROMPT + BG + METADATA)
+                    ========================================================== -->
+                    <div id="studioOutputBundle" class="space-y-4">
+
+                        <!-- A. MASTER PROMPT & NEGATIVE PROMPT -->
+                        <section class="atelier-card p-4">
+                            <div class="flex items-center justify-between gap-2 mb-2p5">
+                                <div>
+                                    <span class="px-2 py-0p5 rounded text-9 font-mono-tech font-extrabold uppercase" style="background: var(--cta-gradient); color: var(--cta-text);">Master Prompt (EN)</span>
+                                    <h3 class="font-luxury text-14 font-bold mt-1">Studio-Grade Generation Blueprint</h3>
+                                </div>
+                                <button type="button" onclick="copyFromElement('outMasterPrompt', 'Master Prompt (EN)')"
+                                    class="lux-btn pill-chip active px-3 py-1p5 rounded-xl text-10 font-extrabold">
+                                    Salin Prompt
+                                </button>
+                            </div>
+
+                            <div id="outMasterPrompt" class="prompt-box font-mono-tech select-all"></div>
+
+                            <!-- Negative Prompt -->
+                            <div class="mt-3 p-3 rounded-2xl" style="background: var(--glass-pill); border: 1px solid var(--border-subtle);">
+                                <div class="flex items-center justify-between gap-2 mb-1">
+                                    <span class="text-10 font-mono-tech font-bold uppercase" style="color: var(--accent-gold);">Negative Prompt / Rejection Guard</span>
+                                    <button type="button" onclick="copyFromElement('outNegativePrompt', 'Negative Prompt')"
+                                        class="lux-btn pill-chip px-2 py-0p5 rounded-lg text-10 font-bold">
+                                        Salin
+                                    </button>
+                                </div>
+                                <p id="outNegativePrompt" class="font-mono-tech text-10 leading-relaxed" style="color: var(--text-secondary);"></p>
+                            </div>
+                        </section>
+
+                        <!-- B. SARAN FORMAT BACKGROUND + SMALL TEXT REASON -->
+                        <section class="atelier-card p-4">
+                            <div class="flex items-start gap-2p5">
+                                <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background: rgba(229,193,88,0.14); border: 1px solid var(--border-strong); color: var(--accent-gold);">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                                    </svg>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <span class="text-10 font-mono-tech font-bold uppercase" style="color: var(--text-muted);">Agent 05 • Saran Format Background</span>
+                                    <div class="flex items-center gap-1p5 mt-1" style="flex-wrap: wrap;">
+                                        <span id="outBgVerdict" class="px-2p5 py-1 rounded-xl text-11 font-extrabold" style="background: var(--active-pill-bg); color: #FFF; border: 1px solid var(--accent-gold);"></span>
+                                        <span id="outBgSpec" class="px-2 py-0p5 rounded-lg text-10 font-mono-tech font-bold" style="background: var(--glass-pill); color: var(--accent-gold);"></span>
+                                    </div>
+                                    <!-- Small text reason at bottom of recommendation (11px) -->
+                                    <p id="outBgReason" class="text-11 leading-relaxed mt-2 p-2p5 rounded-xl" style="background: rgba(0,0,0,0.18); color: var(--text-secondary); border: 1px solid var(--border-subtle);"></p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- C. OVERPOWERED GLOBAL ENGLISH METADATA SUITE -->
+                        <section class="atelier-card p-4 space-y-3p5">
+                            <div class="flex items-center justify-between gap-2 pb-2p5 border-b">
+                                <div>
+                                    <span class="px-2 py-0p5 rounded text-9 font-mono-tech font-extrabold uppercase" style="background: rgba(16,185,129,0.18); color: var(--accent-emerald);">100% Global English SEO</span>
+                                    <h3 class="font-luxury text-14 font-bold mt-1">Overpowered Title, Category &amp; Keywords</h3>
+                                </div>
+                                <div class="flex items-center gap-1p5">
+                                    <button type="button" onclick="exportCurrentCSV()"
+                                        class="lux-btn pill-chip px-2p5 py-1p5 rounded-xl text-10 font-extrabold">
+                                        CSV
+                                    </button>
+                                    <button type="button" onclick="copyFullMetadataBundle()"
+                                        class="lux-btn pill-chip active px-2p5 py-1p5 rounded-xl text-10 font-extrabold">
+                                        Salin Semua
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Commercial Title -->
+                            <div class="p-3 rounded-2xl" style="background: var(--glass-pill); border: 1px solid var(--border-subtle);">
+                                <div class="flex items-center justify-between gap-2 mb-1p5">
+                                    <span class="text-10 font-extrabold uppercase" style="color: var(--accent-gold);">Commercial Title (EN)</span>
+                                    <div class="flex items-center gap-2">
+                                        <span id="outTitleCount" class="text-10 font-mono-tech" style="color: var(--text-muted);">0/200</span>
+                                        <button type="button" onclick="copyFromElement('outMetaTitle', 'Commercial Title (EN)')"
+                                            class="lux-btn pill-chip px-2 py-0p5 rounded-lg text-10 font-bold">Salin</button>
+                                    </div>
+                                </div>
+                                <div id="outMetaTitle" class="text-12 font-bold leading-snug select-all"></div>
+                            </div>
+
+                            <!-- Mandatory / Optional Description -->
+                            <div class="p-3 rounded-2xl" style="background: var(--glass-pill); border: 1px solid var(--border-subtle);">
+                                <div class="flex items-center justify-between gap-2 mb-1p5">
+                                    <div class="flex items-center gap-1p5">
+                                        <span class="text-10 font-extrabold uppercase" style="color: var(--accent-gold);">Description (EN)</span>
+                                        <span id="outDescBadge" class="px-1p5 py-0p2 rounded text-9 font-mono-tech font-bold" style="background: var(--glass-pill); color: var(--accent-emerald);">OPSIONAL</span>
+                                    </div>
+                                    <button id="btnCopyDesc" type="button" onclick="copyFromElement('outMetaDesc', 'Description (EN)')"
+                                        class="lux-btn pill-chip px-2 py-0p5 rounded-lg text-10 font-bold">Salin</button>
+                                </div>
+                                <div id="outMetaDesc" class="text-11 leading-relaxed select-all" style="color: var(--text-secondary);"></div>
+                            </div>
+
+                            <!-- Official Platform Categories -->
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="p-2p5 rounded-xl" style="background: var(--glass-pill); border: 1px solid var(--border-emerald);">
+                                    <span class="block text-9 font-mono-tech uppercase" style="color: var(--text-muted);">Primary Category</span>
+                                    <span id="outPrimaryCat" class="text-11 font-extrabold"></span>
+                                </div>
+                                <div class="p-2p5 rounded-xl" style="background: var(--glass-pill); border: 1px solid var(--border-subtle);">
+                                    <span class="block text-9 font-mono-tech uppercase" style="color: var(--text-muted);">Secondary Category</span>
+                                    <span id="outSecondaryCat" class="text-11 font-bold" style="color: var(--text-secondary);"></span>
+                                </div>
+                            </div>
+
+                            <!-- Overpowered Keywords (Top 15 Crucial + Full Platform Max) -->
+                            <div class="space-y-2p5 pt-1">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-11 font-extrabold">
+                                        Keywords (<span id="outKwCount" style="color: var(--accent-gold);">49</span>/<span id="outKwMax">49</span> Max)
+                                    </span>
+                                    <div class="flex items-center gap-1p5">
+                                        <button type="button" onclick="copyKeywords(15)"
+                                            class="lux-btn pill-chip px-2p5 py-1 rounded-lg text-10 font-extrabold" style="border-color: var(--accent-gold); color: var(--accent-gold);">
+                                            Salin Top 15
+                                        </button>
+                                        <button type="button" onclick="copyKeywords(999)"
+                                            class="lux-btn pill-chip active px-2p5 py-1 rounded-lg text-10 font-extrabold">
+                                            Salin Semua
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- TOP 15 CRUCIAL HIGHLIGHT BOX -->
+                                <div class="p-3 rounded-2xl" style="background: rgba(229,193,88,0.09); border: 1px solid var(--border-strong);">
+                                    <div class="text-10 font-mono-tech font-extrabold uppercase mb-2 flex items-center gap-1p5" style="color: var(--accent-gold);">
+                                        <span>★</span> Top 15 Keyword Paling Krusial (#1 — #15)
+                                    </div>
+                                    <div id="outTop15Keywords" class="flex gap-1p5" style="flex-wrap: wrap;"></div>
+                                </div>
+
+                                <!-- REMAINING SUPPORTING KEYWORDS -->
+                                <div class="p-3 rounded-2xl" style="background: var(--glass-pill); border: 1px solid var(--border-subtle);">
+                                    <div class="text-10 font-mono-tech uppercase mb-2" style="color: var(--text-muted);">
+                                        Supporting Global Discovery Keywords (#16 — #<span id="outKwTailNum">49</span>)
+                                    </div>
+                                    <div id="outRestKeywords" class="flex gap-1p5" style="flex-wrap: wrap;"></div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- =============================================================
+                     TAB 2: SARAN ASSET AI (4 STYLE RECOMMENDATIONS)
+                ============================================================== -->
+                <div id="tab-view-saran" class="hidden space-y-4">
+                    <section class="atelier-card p-4">
+                        <span class="px-2 py-0p5 rounded text-9 font-mono-tech font-extrabold uppercase" style="background: var(--cta-gradient); color: var(--cta-text);">Agent 06 • Portfolio Multiplier</span>
+                        <h2 class="font-luxury text-16 font-bold mt-1p5">Saran Asset AI Lintas Format</h2>
+                        <p class="text-11 mt-0p5" style="color: var(--text-muted);">
+                            4 rekomendasi variasi format &amp; gaya paling laris dari deskripsi: <strong id="saranThemeSubtitle" style="color: var(--accent-gold);"></strong>
+                        </p>
+                    </section>
+
+                    <div id="saranCardsList" class="space-y-3"></div>
+                </div>
+
+                <!-- =============================================================
+                     TAB 3: RIWAYAT PRODUKSI + HAPUS RIWAYAT
+                ============================================================== -->
+                <div id="tab-view-riwayat" class="hidden space-y-4">
+                    <section class="atelier-card p-4">
+                        <div class="flex items-center justify-between gap-2">
+                            <div>
+                                <h2 class="font-luxury text-16 font-bold">Riwayat Produksi (<span id="historyTotalLabel" style="color: var(--accent-gold);">0</span>)</h2>
+                                <p class="text-10" style="color: var(--text-muted);">Tersimpan otomatis secara offline di perangkat</p>
+                            </div>
+
+                            <!-- 2-Step Inline Clear History Controls -->
+                            <div>
+                                <button id="btnRequestClearHistory" type="button" onclick="promptClearHistory()"
+                                    class="lux-btn px-3 py-1p5 rounded-xl text-10 font-extrabold flex items-center gap-1"
+                                    style="background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border);">
+                                    <svg class="w-3p5 h-3p5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                    Hapus Riwayat
+                                </button>
+
+                                <div id="confirmClearHistoryRow" class="hidden items-center gap-1p5">
+                                    <button type="button" onclick="executeClearAllHistory()"
+                                        class="lux-btn px-2p5 py-1p5 rounded-xl text-10 font-extrabold" style="background: #E11D48; color: #FFFFFF;">
+                                        Ya, Hapus
+                                    </button>
+                                    <button type="button" onclick="abortClearHistory()"
+                                        class="lux-btn pill-chip px-2p5 py-1p5 rounded-xl text-10 font-bold">
+                                        Batal
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div id="historyCardsList" class="space-y-3"></div>
+                </div>
+
+                <!-- =============================================================
+                     TAB 4: APP ICON & CAPACITOR EXPORT STUDIO
+                ============================================================== -->
+                <div id="tab-view-icon" class="hidden space-y-4">
+                    <section class="atelier-card p-5 text-center">
+                        <span class="px-2p5 py-0p5 rounded-full text-9 font-mono-tech font-extrabold uppercase" style="background: rgba(229,193,88,0.16); color: var(--accent-gold); border: 1px solid var(--border-strong);">
+                            Capacitor Native App Identity
+                        </span>
+                        <h2 class="font-luxury text-18 font-extrabold mt-2">Bespoke Luxury App Icon</h2>
+                        <p class="text-11 mt-0p5" style="color: var(--text-muted);">
+                            Emerald-Obsidian Squircle • Faceted Gold Aperture Prism • 4-Point AI Spark
+                        </p>
+
+                        <!-- Hero Icon Showcase -->
+                        <div class="my-5 flex justify-center">
+                            <div id="iconStudioHeroMount" class="icon-mount w-36 h-36 relative overflow-hidden" style="border-radius: 34px; box-shadow: 0 22px 50px rgba(0,0,0,0.55), 0 0 32px rgba(229,193,88,0.28);"></div>
+                        </div>
+
+                        <!-- Export 1024x1024 PNG & SVG Buttons -->
+                        <div class="grid grid-cols-2 gap-2p5">
+                            <button type="button" onclick="downloadAppIconPNG()"
+                                class="lux-btn cta-specular py-3 px-3 rounded-2xl text-11 font-extrabold flex items-center justify-center gap-1p5"
+                                style="background: var(--cta-gradient); color: var(--cta-text); box-shadow: 0 10px 28px rgba(212, 175, 55, 0.32);">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                                PNG 1024×1024
+                            </button>
+                            <button type="button" onclick="downloadAppIconSVG()"
+                                class="lux-btn pill-chip py-3 px-3 rounded-2xl text-11 font-extrabold flex items-center justify-center gap-1p5">
+                                <svg class="w-4 h-4" style="color: var(--accent-gold);" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                                </svg>
+                                Download SVG
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Android & iOS Home Screen Dock Mockups -->
+                    <section class="atelier-card p-4 space-y-3">
+                        <h3 class="text-12 font-extrabold uppercase tracking-wider" style="color: var(--accent-gold);">Preview Home Screen Android &amp; iOS</h3>
+
+                        <!-- Simulated Smartphone Wallpaper Dock -->
+                        <div class="rounded-3xl p-4 relative overflow-hidden" style="background: linear-gradient(160deg, #062118 0%, #0D3B2C 50%, #04120D 100%); border: 1px solid var(--border-subtle);">
+                            <div class="text-10 font-mono-tech mb-3 flex justify-between" style="color: rgba(167,243,208,0.7);">
+                                <span>Android Material / iOS SpringBoard</span>
+                                <span>1024px Adaptive</span>
+                            </div>
+
+                            <div class="grid grid-cols-4 gap-3 text-center">
+                                <!-- Installed StockForge AI App -->
+                                <div class="flex flex-col items-center gap-1p5">
+                                    <div id="mockupDockIcon" class="icon-mount w-14 h-14 rounded-2xl overflow-hidden" style="box-shadow: 0 8px 20px rgba(0,0,0,0.45);"></div>
+                                    <span class="text-10 font-bold" style="color: #FFFFFF;">StockForge AI</span>
+                                </div>
+
+                                <!-- Companion Apps for Context -->
+                                <div class="flex flex-col items-center gap-1p5" style="opacity: 0.8;">
+                                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-14 font-extrabold" style="background: linear-gradient(135deg, #1E293B, #0F172A); border: 1px solid rgba(255,255,255,0.12); color: #FFFFFF;">St</div>
+                                    <span class="text-10 font-medium" style="color: #CBD5E1;">Contributor</span>
+                                </div>
+                                <div class="flex flex-col items-center gap-1p5" style="opacity: 0.8;">
+                                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-14 font-extrabold" style="background: linear-gradient(135deg, #065F46, #064E3B); border: 1px solid rgba(255,255,255,0.12); color: #FFFFFF;">Ai</div>
+                                    <span class="text-10 font-medium" style="color: #CBD5E1;">Vector Lab</span>
+                                </div>
+                                <div class="flex flex-col items-center gap-1p5" style="opacity: 0.8;">
+                                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-14 font-extrabold" style="background: linear-gradient(135deg, #78350F, #451A03); border: 1px solid rgba(255,255,255,0.12); color: #FFFFFF;">4K</div>
+                                    <span class="text-10 font-medium" style="color: #CBD5E1;">Render Cam</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-2xl text-11 leading-relaxed" style="background: var(--glass-pill); border: 1px solid var(--border-emerald); color: var(--text-secondary);">
+                            <strong style="color: var(--accent-gold);">Siap untuk Capacitor Assets:</strong> File <span class="font-mono-tech">assets/icon-only.svg</span> &amp; <span class="font-mono-tech">assets/splash.svg</span> sudah ada di repo — workflow GitHub Actions otomatis menjalankan <span class="font-mono-tech">npx capacitor-assets generate --android</span> untuk membuat ikon &amp; splash screen Android.
+                        </div>
+                    </section>
+                </div>
+
+            </main>
+
+            <!-- =================================================================
+                 FLOATING FROSTED-GLASS BOTTOM TAB BAR (4 TABS)
+            ================================================================== -->
+            <nav class="bottom-dock-wrap" aria-label="Bottom Navigation">
+                <div class="bottom-dock-grid">
+                    <div id="dockActiveIndicator"></div>
+
+                    <button id="dock-btn-0" type="button" onclick="switchBottomTab(0, 'studio')" class="lux-btn dock-tab-btn active">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <span>Studio</span>
+                    </button>
+
+                    <button id="dock-btn-1" type="button" onclick="switchBottomTab(1, 'saran')" class="lux-btn dock-tab-btn">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        <span>Saran AI</span>
+                    </button>
+
+                    <button id="dock-btn-2" type="button" onclick="switchBottomTab(2, 'riwayat')" class="lux-btn dock-tab-btn">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Riwayat</span>
+                    </button>
+
+                    <button id="dock-btn-3" type="button" onclick="switchBottomTab(3, 'icon')" class="lux-btn dock-tab-btn">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                        </svg>
+                        <span>App Icon</span>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- =================================================================
+                 FLOATING TOAST NOTIFICATION INSIDE APP SHELL
+            ================================================================== -->
+            <div id="atelierToast">
+                <div class="toast-inner">
+                    <span class="toast-dot"></span>
+                    <span id="atelierToastMsg">Copied!</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 100% OFFLINE app scripts (load order matters: lexicon -> taxonomy ->
+         agents -> aurora -> sound -> app). No CDN, no external requests. -->
+    <script src="js/lexicon.js"></script>
+    <script src="js/taxonomy.js"></script>
+    <script src="js/agents.js"></script>
+    <script src="js/aurora-engine.js"></script>
+    <script src="js/sound-haptics.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
